@@ -131,8 +131,6 @@ def update_server_ip(sql_handle,
     sql_handle.commit()
     print(r'ServerIP in database was changed')
 
-    cursor.execute('SELECT * FROM Servers')
-
     sql_handle.close()
 
 
