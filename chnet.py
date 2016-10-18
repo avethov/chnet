@@ -79,6 +79,36 @@ def change_registry_netinterface(new_server_ip):
         print(error)
 
 
+def change_db_connection_settings(source):
+    try:
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                             DB_INIT_STRING,
+                             0,
+                             (winreg.KEY_ALL_ACCESS + winreg.KEY_WOW64_64KEY))
+        try:
+            (old_init_string, ktype) = winreg.QueryValueEx(key,
+                                                           'DBInitString')
+            if ktype is not winreg.REG_SZ:
+                raise ValueError
+        except OSError as error:
+            print(error)
+
+        new_init_string = re.sub(r'(?<=Data Source=)([a-zA-Z0-9\.()]+)',
+                                 source,
+                                 old_init_string)
+        print(new_init_string)
+
+        winreg.SetValueEx(key,
+                          'DBInitString',
+                          0,
+                          winreg.REG_SZ,
+                          new_init_string)
+
+        print(r'HKCU\Software\ELVEES\Common\DBInitString was changed')
+    except OSError as error:
+        print(error)
+
+
 def get_db_connection_settings():
     try:
         key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
@@ -137,14 +167,15 @@ def update_server_ip(sql_handle,
 def usage():
     usage = """
 -h, --help      Show options
--i, --interface	New server ip address.
+-i, --interface	Change server ip address
+-с, --connect	Change DNS database server in DBInitString
     """
     print(usage)
 
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "hi:", ["help", "interface="])
+        opts, args = getopt.getopt(argv, "hi:c:", ["help", "interface=",  "connect="])
     except getopt.GetoptError as err:
         usage()
         sys.exit(2)
@@ -154,21 +185,23 @@ def main(argv):
             sys.exit()
         elif opt in ("-i", "--interface"):
             new_server_ip = arg
+        elif opt in ("-c", "--connect"):
+            source = arg
         else:
             assert False, "Unsupported option"
 
-    old_server_ip = get_old_server_ip()
+    if source:
+        change_db_connection_settings(source)
+    if new_server_ip:
+        old_server_ip = get_old_server_ip()
+        change_registry_netinterface(new_server_ip)
 
-    change_registry_netinterface(new_server_ip)
-
-    (server, catalog) = get_db_connection_settings()
-
-    sql_handle = connect_db(server,
-                            catalog)
-
-    update_server_ip(sql_handle,
-                     old_server_ip,
-                     new_server_ip)
+        (server, catalog) = get_db_connection_settings()
+        sql_handle = connect_db(server,
+                                catalog)
+        update_server_ip(sql_handle,
+                         old_server_ip,
+                         new_server_ip)
 
 
 if __name__ == '__main__':
