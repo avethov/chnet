@@ -173,6 +173,8 @@ def usage():
 
 
 def main(argv):
+    new_server_ip = ''
+    source = ''
     try:
         opts, args = getopt.getopt(argv, "hi:c:", ["help", "interface=",  "connect="])
         if len(sys.argv) == 1:
