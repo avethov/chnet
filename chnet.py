@@ -96,7 +96,6 @@ def change_db_connection_settings(source):
         new_init_string = re.sub(r'(?<=Data Source=)([a-zA-Z0-9\.()]+)',
                                  source,
                                  old_init_string)
-        print(new_init_string)
 
         winreg.SetValueEx(key,
                           'DBInitString',
@@ -176,6 +175,9 @@ def usage():
 def main(argv):
     try:
         opts, args = getopt.getopt(argv, "hi:c:", ["help", "interface=",  "connect="])
+        if len(sys.argv) == 1:
+            usage()
+            sys.exit(2)
     except getopt.GetoptError as err:
         usage()
         sys.exit(2)
