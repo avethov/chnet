@@ -93,7 +93,7 @@ def change_db_connection_settings(source):
         except OSError as error:
             print(error)
 
-        new_init_string = re.sub(r'(?<=Data Source=)([a-zA-Z0-9\.()]+)',
+        new_init_string = re.sub(r'(?<=Data Source=)([a-zA-Z0-9\.()\\]+)',
                                  source,
                                  old_init_string)
 
@@ -167,7 +167,7 @@ def usage():
     usage = """
 -h, --help      Show options
 -i, --interface	Change server ip address
--с, --connect	Change DNS database server in DBInitString
+-с, --connect	Change data source in DBInitString
     """
     print(usage)
 
